@@ -1,33 +1,39 @@
-# Proyecto base para API con NodeJS y ExpressJS
+# Proyecto base para API con Node.js y Express
 
-Esta base de proyecto brinda una forma simplificada de implementación de una API Rest con NodeJS y ExpressJS. El objetivo principal es poder brindar una forma fácil y rápida de iniciar un proyecto utilizando este esquema definido.
+Esta base de proyecto brinda una forma simplificada de implementación de una API Rest con Node.js y Express. El objetivo principal es poder brindar una forma fácil y rápida de iniciar un proyecto utilizando este esquema definido.
 La personalización adicional dependerá del usuario final. Se brinda un esquema básico para el inicio del desarrollo sin preocuparse por configuraciones básica que pueden tomar un tiempo relativamente escencial.
 
 ## Prerequisitos
-Tomar en consideración que se utilizar NodeJS en su versión 18.X. Se aconseja poder instalar esta versión para utilización de este esquema. A continuación se brinda una forma rápida de instalación utilizando un administrador de versión Node. [Node Version Manager](https://github.com/nvm-sh/nvm) brinda una forma rápida de poder administrar varias versión de Node según las necesidades del proyecto. Se aconseja consultar su documentación para una orientación y configuraciones avanzadas.
+
+Tomar en consideración que se utilizar Node.js en su versión 18.X. Se aconseja poder instalar esta versión para utilización de este esquema. A continuación se brinda una forma rápida de instalación utilizando un administrador de versión Node. [Node Version Manager](https://github.com/nvm-sh/nvm) brinda una forma rápida de poder administrar varias versión de Node según las necesidades del proyecto. Se aconseja consultar su documentación para una orientación y configuraciones avanzadas.
 
 Usaremos Node en su versión [18.x](https://github.com/nvm-sh/nvm?tab=readme-ov-file#intro)
+
 ```
 nvm install 18
 nvm use 18
 ```
 
 Procederemos a la instalación de dependencias del esquema
+
 ```
 npm install
 ```
 
 Considera que cuando se realice una instalación para ambientes de producción, instalar únicamente los paquetes de producción
+
 ```
 npm install --omit=dev
 ```
 
-Considerar que como parte de las configuraciones utilizamos [dotenv](https://www.npmjs.com/package/dotenv) para gestionar las variables de entorno, por lo cuál, debemos crear el archivo ```.env``` en la raíz del proyecto.
+Considerar que como parte de las configuraciones utilizamos [dotenv](https://www.npmjs.com/package/dotenv) para gestionar las variables de entorno, por lo cuál, debemos crear el archivo `.env` en la raíz del proyecto.
+
 ```
 cp .env.example .env
 ```
 
 Finalmente utilizas el comando para iniciar la API. Posterior a la inicialización tendremos a disposición la URL inicial.
+
 ```
 curl http://localhost:3500/
 ```
