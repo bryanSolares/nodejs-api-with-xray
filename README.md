@@ -1,82 +1,58 @@
-# Proyecto base para API con Node.js y Express
+# Implementando [X-Ray de AWS](https://aws.amazon.com/es/xray/) con API de Node.js y Express
 
-Esta base de proyecto brinda una forma simplificada de implementación de una API Rest con Node.js y Express. El objetivo principal es poder brindar una forma fácil y rápida de iniciar un proyecto utilizando este esquema definido.
-La personalización adicional dependerá del usuario final. Se brinda un esquema básico para el inicio del desarrollo sin preocuparse por configuraciones básica que pueden tomar un tiempo relativamente escencial.
+AWS X-Ray es un servicio que recopila datos sobre las solicitudes que atiende tu aplicación y proporciona herramientas para ver, filtrar y obtener información detallada sobre esos datos. Esto te ayuda a identificar problemas y oportunidades de optimización en tu aplicación. [Aquí](https://docs.aws.amazon.com/es_es/xray/latest/devguide/aws-xray.html) puedes encontrar más información sobre AWS X-Ray.
 
-## Prerequisitos
+Para una guía detallada sobre la implementación de X-Ray en Node.js, consulta la [documentación oficial](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-nodejs.html).
 
-Tomar en consideración que se utilizar Node.js en su versión 18.X. Se aconseja poder instalar esta versión para utilización de este esquema. A continuación se brinda una forma rápida de instalación utilizando un administrador de versión Node. [Node Version Manager](https://github.com/nvm-sh/nvm) brinda una forma rápida de poder administrar varias versión de Node según las necesidades del proyecto. Se aconseja consultar su documentación para una orientación y configuraciones avanzadas.
+## Implementación
 
-Usaremos Node en su versión [18.x](https://github.com/nvm-sh/nvm?tab=readme-ov-file#intro)
+1. **Estructura de la aplicación**: Utiliza la plantilla proporcionada para construir una API básica con Node.js y Express. Puedes encontrar una plantilla básica [aquí](https://github.com/bryanSolares/simple-skeleton-backend-nodejs-express).
 
-```
-nvm install 18
-nvm use 18
-```
-
-Procederemos a la instalación de dependencias del esquema
+2. **Credenciales de AWS**: Asegúrate de tener credenciales de AWS, como [Access Key de AWS](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html), configuradas en tu entorno. Estas credenciales se utilizarán tanto dentro de la aplicación como por el Daemon de X-Ray para enviar información a AWS X-Ray. Asegúrate de asignar a estas credenciales un usuario con los privilegios mínimos necesarios.
 
 ```
-npm install
+aws configure
 ```
 
-Considera que cuando se realice una instalación para ambientes de producción, instalar únicamente los paquetes de producción
+3. **Daemon de X-Ray**: Instala y ejecuta el Daemon de X-Ray localmente o mediante un [contenedor de Docker](https://docs.aws.amazon.com/xray/latest/devguide/xray-daemon-local.html). Se proporciona un Dockerfile con las configuraciones necesarias para crear una imagen del Daemon.
 
 ```
-npm install --omit=dev
+docker build -t xray-daemon .
 ```
 
-Considerar que como parte de las configuraciones utilizamos [dotenv](https://www.npmjs.com/package/dotenv) para gestionar las variables de entorno, por lo cuál, debemos crear el archivo `.env` en la raíz del proyecto.
+4. **Ejecución del Daemon**: Ejecuta un contenedor utilizando la imagen del Daemon de X-Ray. Asegúrate de montar tus credenciales de AWS como un volumen relacionado con el contenedor.
 
 ```
-cp .env.example .env
+docker run  --attach STDOUT  -v ~/.aws/:/root/.aws/:ro  --net=host -e AWS_REGION=us-east-2  --name xray-daemon -p 2000:2000/udp  xray-daemon -o
 ```
 
-Finalmente utilizas el comando para iniciar la API. Posterior a la inicialización tendremos a disposición la URL inicial.
-
-```
-curl http://localhost:3500/
-```
-
-Si adicionalmente, queremos asegurarnos que todo esté bien antes de iniciar nuestro entorno, podemos ejecutar el comando para realizar las pruebas donde tendremos un segundo test que comprueba la inicialización de la API.
-
-## Comandos
-
--   Iniciar aplicación con Node
-
-```
-npm run start
-```
-
--   Iniciar aplicación en modo desarollo no Nodemon
+5. **Inicio de la API**: Inicia tu API y utiliza los endpoints que están instrumentados con X-Ray.
 
 ```
 npm run dev
 ```
 
--   Formateo de archivos con Prettier
-
 ```
-npm run format
-```
-
--   Visualizar problemas de linter con Eslint
-
-```
-npm run linter
+# Endpoints
+http://localhost:3500/aws
+http://localhost:3500/aws/aws-sdk
+http://localhost:3500/aws/http-request
+http://localhost:3500/aws/mysql
+http://localhost:3500/aws/error
 ```
 
--   Pruebas de código
+## Contexto de código
 
-```
-npm run test
-```
+Cada uno de los endpoint instrumentados, generarán información hacía el Daemon de X-Ray.
 
-# Documentación adicional
+El primer endpoint renderiza un HTML al usuario. Dentro del proceso antes de renderizar se crea un sub-segmento para el segmento principal, donde se añade información relacionada a Anotaciones, Metadatos. Considera que las Anotaciones son indexables y son utilizadas para realizar querys de consulta en la consola de AWS X-Ray.
+El segundo endpoint hace uso de nuestras credenciales de AWS para consultar las tablas de DynamoDB que existen según la región existente en las variables de entorno.
+El tercer endpoint registra cuál es el resultado de interactura con una dirección HTTPS externa.
+El cuarto endpoint hace uso de una conexión a MySQL, mostrando como resultado al usuario la consulta a cierta tabla configurada en las variables de entorno. Este endpoint está instrumentado con X-Ray de tal forma que cuando existe un error en la conexión, éste sea registrado en un nuevo sub-segmento, añadiendo anotaciones y registrado el error generado.
+Finalmente el quinto endpoint hace el registro de un error controlado, evidenciando y dejando información en un sub-segmento, sobre lo que ha pasado.
 
--   [Nodemon](https://github.com/remy/nodemon#nodemon)
--   [ESlint](https://eslint.org/)
--   [Prettier](https://prettier.io/)
--   [Editorconfig](https://editorconfig.org/)
--   [Supertest](https://github.com/ladjs/supertest#readme)
--   [Jest](https://jestjs.io/docs/getting-started)
+## Consideraciones adicionales
+
+-   Asegúrate de configurar correctamente las variables de entorno.
+-   Si no tienes una base de datos MySQL disponible, considera crear un contenedor [Docker con MySQL](https://hub.docker.com/_/mysql) para mayor facilidad.
+-   Configura tus credenciales de AWS tanto en tu máquina local como en las variables de entorno.
