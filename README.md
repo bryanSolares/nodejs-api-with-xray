@@ -23,7 +23,7 @@ docker build -t xray-daemon .
 4. **Ejecución del Daemon**: Ejecuta un contenedor utilizando la imagen del Daemon de X-Ray. Asegúrate de montar tus credenciales de AWS como un volumen relacionado con el contenedor.
 
 ```
-docker run  --attach STDOUT  -v ~/.aws/:/root/.aws/:ro  --net=host -e AWS_REGION=us-east-2  --name xray-daemon -p 2000:2000/udp  xray-daemon -o
+docker run  --attach STDOUT  -v ~/.aws/:/root/.aws/:ro  --net=host -e AWS_REGION=<region>  --name <name-container> -p 2000:2000/udp  xray-daemon -o
 ```
 
 5. **Inicio de la API**: Inicia tu API y utiliza los endpoints que están instrumentados con X-Ray.
@@ -45,11 +45,11 @@ http://localhost:3500/aws/error
 
 Cada uno de los endpoint instrumentados, generarán información hacía el Daemon de X-Ray.
 
-El primer endpoint renderiza un HTML al usuario. Dentro del proceso antes de renderizar se crea un sub-segmento para el segmento principal, donde se añade información relacionada a Anotaciones, Metadatos. Considera que las Anotaciones son indexables y son utilizadas para realizar querys de consulta en la consola de AWS X-Ray.
-El segundo endpoint hace uso de nuestras credenciales de AWS para consultar las tablas de DynamoDB que existen según la región existente en las variables de entorno.
-El tercer endpoint registra cuál es el resultado de interactura con una dirección HTTPS externa.
-El cuarto endpoint hace uso de una conexión a MySQL, mostrando como resultado al usuario la consulta a cierta tabla configurada en las variables de entorno. Este endpoint está instrumentado con X-Ray de tal forma que cuando existe un error en la conexión, éste sea registrado en un nuevo sub-segmento, añadiendo anotaciones y registrado el error generado.
-Finalmente el quinto endpoint hace el registro de un error controlado, evidenciando y dejando información en un sub-segmento, sobre lo que ha pasado.
+-   El primer endpoint renderiza un HTML al usuario. Dentro del proceso antes de renderizar se crea un sub-segmento para el segmento principal, donde se añade información relacionada a Anotaciones, Metadatos. Considera que las Anotaciones son indexables y son utilizadas para realizar querys de consulta en la consola de AWS X-Ray.
+-   El segundo endpoint hace uso de nuestras credenciales de AWS para consultar las tablas de DynamoDB que existen según la región existente en las variables de entorno.
+-   El tercer endpoint registra cuál es el resultado de interactura con una dirección HTTPS externa.
+-   El cuarto endpoint hace uso de una conexión a MySQL, mostrando como resultado al usuario la consulta a cierta tabla configurada en las variables de entorno. Este endpoint está instrumentado con X-Ray de tal forma que cuando existe un error en la conexión, éste sea registrado en un nuevo sub-segmento, añadiendo anotaciones y registrado el error generado.
+-   Finalmente el quinto endpoint hace el registro de un error controlado, evidenciando y dejando información en un sub-segmento, sobre lo que ha pasado.
 
 ## Consideraciones adicionales
 
